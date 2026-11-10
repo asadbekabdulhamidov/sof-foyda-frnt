@@ -163,7 +163,7 @@ export const ProductList: React.FC = () => {
             className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Yangi Kirim Qilish (AI)</span>
+            <span>Yangi Kirim Qilish</span>
           </button>
         </div>
 

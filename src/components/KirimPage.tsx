@@ -1,19 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
-import { analyzeClothingImage } from '../services/geminiService';
-import type { AIClothingAnalysis } from '../types';
 import { 
   Upload, 
-  Sparkles, 
   Check, 
   DollarSign, 
   Tag, 
   Layers, 
   Camera, 
-  Code, 
   RefreshCw,
   PlusCircle,
-  HelpCircle,
   X,
   PackagePlus,
   Barcode,
@@ -24,21 +19,61 @@ import {
 import { formatUZS, generateBarcodeNumber } from '../utils/formatters';
 import confetti from 'canvas-confetti';
 
-const SAMPLE_IMAGES = [
+const SAMPLE_CLOTHES = [
   {
     name: 'Klassik Shim',
+    title: 'Erkaklar qora klassik shimi',
+    category: 'Erkaklar shimi',
+    type: 'Klassik shim',
+    color: 'Qora',
+    material: 'Jun va viskoza',
+    season: 'Barcha mavsum',
+    audience: 'Erkaklar',
+    sizes: ['30', '32', '34', '36'],
+    cost: 130000,
+    price: 240000,
     url: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&auto=format&fit=crop&q=80',
   },
   {
     name: 'Qora Xudi',
+    title: 'Erkaklar qora kapyushonli xudisi',
+    category: 'Erkaklar ustki kiyimi',
+    type: 'Xudi',
+    color: 'Qora',
+    material: 'Paxta / Koton',
+    season: 'Bahor/Kuz',
+    audience: 'Erkaklar',
+    sizes: ['S', 'M', 'L', 'XL'],
+    cost: 110000,
+    price: 210000,
     url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80',
   },
   {
     name: 'Ayollar Libosi',
+    title: 'Ayollar bej trikotaj libosi',
+    category: 'Ayollar libosi',
+    type: 'Trikotaj ko\'ylak',
+    color: 'Bej',
+    material: 'Trikotaj va paxta',
+    season: 'Bahor/Kuz',
+    audience: 'Ayollar',
+    sizes: ['S', 'M', 'L'],
+    cost: 140000,
+    price: 280000,
     url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&auto=format&fit=crop&q=80',
   },
   {
     name: 'Oq Futbolka',
+    title: 'Uniseks oq premium futbolka',
+    category: 'Yozgi kiyim',
+    type: 'T-shirt',
+    color: 'Oq',
+    material: '100% Organik Paxta',
+    season: 'Yozgi',
+    audience: 'Uniseks',
+    sizes: ['S', 'M', 'L', 'XL'],
+    cost: 45000,
+    price: 95000,
     url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80',
   },
 ];
@@ -48,22 +83,19 @@ export const KirimPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [rawJson, setRawJson] = useState<string>('');
-  const [showJsonViewer, setShowJsonViewer] = useState<boolean>(false);
 
-  // Form Fields mapped to prompt
-  const [category, setCategory] = useState('');
-  const [type, setType] = useState('');
-  const [color, setColor] = useState('');
-  const [material, setMaterial] = useState('');
-  const [pattern, setPattern] = useState('');
+  // Form Fields
+  const [shortTitle, setShortTitle] = useState('');
+  const [skuCode, setSkuCode] = useState(`TOV-${Math.floor(100 + Math.random() * 900)}`);
+  const [category, setCategory] = useState("Erkaklar ko'ylagi");
+  const [type, setType] = useState('Klassik');
+  const [color, setColor] = useState('Qora');
+  const [material, setMaterial] = useState('Paxta / Koton');
+  const [pattern, setPattern] = useState('Bir xil rang');
   const [season, setSeason] = useState('Bahor/Kuz');
   const [targetAudience, setTargetAudience] = useState('Erkaklar');
   const [sizes, setSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
   const [newSizeInput, setNewSizeInput] = useState('');
-  const [shortTitle, setShortTitle] = useState('');
-  const [skuCode, setSkuCode] = useState('');
   
   // Pricing and Stock
   const [costPrice, setCostPrice] = useState<number>(100000);
@@ -76,55 +108,25 @@ export const KirimPage: React.FC = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setImagePreview(base64);
-        runAIAnalysis(base64);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const selectSampleImage = (url: string) => {
-    setImagePreview(url);
-    runAIAnalysis(url);
-  };
-
-  const runAIAnalysis = async (imgData: string) => {
-    setIsAnalyzing(true);
-    try {
-      const result: AIClothingAnalysis = await analyzeClothingImage(imgData);
-      setRawJson(JSON.stringify(result, null, 2));
-
-      setCategory(result.category);
-      setType(result.type);
-      setColor(result.color);
-      setMaterial(result.material_estimated);
-      setPattern(result.pattern);
-      setSeason(result.season);
-      setTargetAudience(result.target_audience);
-      setSizes(result.sizes_detected && result.sizes_detected.length > 0 ? result.sizes_detected : ['S', 'M', 'L', 'XL']);
-      setShortTitle(result.short_title);
-      setSkuCode(result.sku_code_suggestion);
-
-      // Estimated intelligent pricing
-      if (result.type.toLowerCase().includes('xudi') || result.type.toLowerCase().includes('kurtka')) {
-        setCostPrice(140000);
-        setSellingPrice(260000);
-      } else if (result.type.toLowerCase().includes('shim') || result.type.toLowerCase().includes('jinsi')) {
-        setCostPrice(120000);
-        setSellingPrice(220000);
-      } else if (result.type.toLowerCase().includes('t-shirt') || result.type.toLowerCase().includes('futbolka')) {
-        setCostPrice(45000);
-        setSellingPrice(95000);
-      } else {
-        setCostPrice(110000);
-        setSellingPrice(210000);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAnalyzing(false);
-    }
+  const selectSample = (sample: typeof SAMPLE_CLOTHES[0]) => {
+    setImagePreview(sample.url);
+    setShortTitle(sample.title);
+    setCategory(sample.category);
+    setType(sample.type);
+    setColor(sample.color);
+    setMaterial(sample.material);
+    setSeason(sample.season);
+    setTargetAudience(sample.audience);
+    setSizes(sample.sizes);
+    setCostPrice(sample.cost);
+    setSellingPrice(sample.price);
+    setSkuCode(`TOV-${Math.floor(100 + Math.random() * 900)}`);
   };
 
   const handleAddSize = () => {
@@ -171,9 +173,8 @@ export const KirimPage: React.FC = () => {
 
     // Reset form for next intake
     setShortTitle('');
-    setSkuCode('');
+    setSkuCode(`TOV-${Math.floor(100 + Math.random() * 900)}`);
     setImagePreview('');
-    setRawJson('');
     setBarcode(generateBarcodeNumber());
     setBarcodeProduct(saved);
   };
@@ -189,22 +190,17 @@ export const KirimPage: React.FC = () => {
       
       {/* Page Header */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-500/20">
-              <PackagePlus className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-lg font-black text-white flex items-center gap-2">
-                Kirim — Kelgan Tovarlarni Kiritish
-                <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  AI Auto-Fill
-                </span>
-              </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Kiyim rasmi yoki etiketkasini yuklang, AI avtomatik parametrlar va sof foydani hisoblaydi
-              </p>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-500/20">
+            <PackagePlus className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-lg font-black text-white">
+              Kirim — Kelgan Tovarlarni Kiritish
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Yangi kelgan tovarlar parametrlarini to'ldiring, tannarx va sotuv narxini belgilab omborga qabul qiling
+            </p>
           </div>
         </div>
 
@@ -220,17 +216,17 @@ export const KirimPage: React.FC = () => {
       {/* Main Intake Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Form & AI Area (Col 8) */}
+        {/* Left Form Area (Col 8) */}
         <div className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
           
-          {/* Image & AI Recognition Bar */}
+          {/* Image & Quick Presets Bar */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
             
             {/* Upload Box */}
             <div className="md:col-span-5 flex flex-col gap-2">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all min-h-[200px] ${
+                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-3 flex flex-col items-center justify-center text-center transition-all min-h-[170px] ${
                   imagePreview
                     ? 'border-emerald-500/50 bg-slate-950/60'
                     : 'border-slate-700 hover:border-emerald-500/50 bg-slate-950/30 hover:bg-slate-950/50'
@@ -245,38 +241,30 @@ export const KirimPage: React.FC = () => {
                 />
 
                 {imagePreview ? (
-                  <div className="relative w-full h-44 rounded-xl overflow-hidden">
+                  <div className="relative w-full h-36 rounded-xl overflow-hidden">
                     <img
                       src={imagePreview}
                       alt="Kiyim rasmi"
                       className="w-full h-full object-cover rounded-xl"
                     />
-                    {isAnalyzing && (
-                      <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs flex flex-col items-center justify-center gap-2 p-2">
-                        <div className="w-8 h-8 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[11px] font-semibold text-emerald-300 text-center animate-pulse">
-                          AI kiyim va birkani tahlil qilmoqda...
-                        </span>
-                      </div>
-                    )}
                     <div className="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur-md text-[10px] text-slate-200 px-2 py-1 rounded-lg border border-slate-700 flex items-center gap-1 group-hover:bg-emerald-600 transition-colors">
                       <Camera className="w-3 h-3" /> O'zgartirish
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-2.5 py-4">
-                    <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="flex flex-col items-center gap-2 py-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <Upload className="w-5 h-5" />
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-200">
-                        Kiyim yoki birka rasmini yuklang
+                        Rasm yuklash (ixtiyoriy)
                       </p>
                       <p className="text-[10px] text-slate-500 mt-0.5">
                         JPEG, PNG, WEBP
                       </p>
                     </div>
-                    <span className="text-[11px] bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">
+                    <span className="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">
                       Rasm tanlash
                     </span>
                   </div>
@@ -285,15 +273,15 @@ export const KirimPage: React.FC = () => {
 
               {/* Sample Quick test buttons */}
               <div>
-                <p className="text-[10px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                  <HelpCircle className="w-3 h-3" /> Namunaviy tovarlar:
+                <p className="text-[10px] font-medium text-slate-400 mb-1">
+                  Tezkor to'ldirish uchun namunalar:
                 </p>
                 <div className="grid grid-cols-4 gap-1.5">
-                  {SAMPLE_IMAGES.map((sample) => (
+                  {SAMPLE_CLOTHES.map((sample) => (
                     <button
                       key={sample.name}
                       type="button"
-                      onClick={() => selectSampleImage(sample.url)}
+                      onClick={() => selectSample(sample)}
                       className="group relative rounded-lg overflow-hidden border border-slate-800 hover:border-emerald-500/50 transition-all text-left"
                     >
                       <img
@@ -310,88 +298,41 @@ export const KirimPage: React.FC = () => {
               </div>
             </div>
 
-            {/* AI Summary & Sof Foyda Projection */}
-            <div className="md:col-span-7 flex flex-col justify-between bg-slate-950/50 p-4 rounded-2xl border border-slate-800">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" /> AI Tahlil Ko'rsatkichlari
+            {/* Sof Foyda Calculation Box */}
+            <div className="md:col-span-7 flex flex-col justify-center bg-gradient-to-br from-emerald-950/40 via-slate-950 to-slate-950 p-4 rounded-2xl border border-emerald-500/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <DollarSign className="w-4 h-4 text-emerald-400" /> Sof Foyda Hisobi (Avtomatik)
+                </span>
+                <span className="text-xs font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                  Rentabellik: {profitMarginPercent}%
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-2.5 text-center mt-2">
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block">1 dona sotuvdan foyda</span>
+                  <span className="text-xs font-black text-emerald-400">
+                    +{formatUZS(netProfitPerItem)}
                   </span>
-                  {rawJson && (
-                    <button
-                      type="button"
-                      onClick={() => setShowJsonViewer(!showJsonViewer)}
-                      className="text-[10px] text-slate-400 hover:text-emerald-400 flex items-center gap-1 underline transition-colors"
-                    >
-                      <Code className="w-3 h-3" /> {showJsonViewer ? 'Forma' : 'JSON'}
-                    </button>
-                  )}
                 </div>
-
-                {showJsonViewer ? (
-                  <pre className="text-[10px] font-mono bg-slate-950 text-emerald-300 p-2.5 rounded-xl border border-slate-800 max-h-40 overflow-auto">
-                    {rawJson}
-                  </pre>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                    <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                      <span className="text-[9px] text-slate-500 block">Kategoriya</span>
-                      <span className="font-semibold text-slate-200 truncate block">{category || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                      <span className="text-[9px] text-slate-500 block">Turi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{type || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                      <span className="text-[9px] text-slate-500 block">Rangi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{color || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                      <span className="text-[9px] text-slate-500 block">Matosi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{material || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                      <span className="text-[9px] text-slate-500 block">Mavsumi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{season || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                      <span className="text-[9px] text-slate-500 block">Kim uchun</span>
-                      <span className="font-semibold text-emerald-400 truncate block">{targetAudience || '—'}</span>
-                    </div>
-                  </div>
-                )}
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block">Kirim miqdori</span>
+                  <span className="text-xs font-bold text-slate-200">
+                    {stock} dona
+                  </span>
+                </div>
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-emerald-500/30">
+                  <span className="text-[10px] text-emerald-300/80 block">Partiya Sof Foydasi</span>
+                  <span className="text-xs font-black text-emerald-300">
+                    +{formatUZS(totalPotentialProfit)}
+                  </span>
+                </div>
               </div>
 
-              {/* Sof Foyda Calculation Box */}
-              <div className="mt-3 p-3.5 rounded-xl bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                    <DollarSign className="w-3.5 h-3.5" /> Sof Foyda Hisobi
-                  </span>
-                  <span className="text-[11px] font-bold text-emerald-300">
-                    Marja: {profitMarginPercent}%
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
-                    <span className="text-[9px] text-slate-400 block">1 dona sotuvdan foyda</span>
-                    <span className="text-xs font-black text-emerald-400">
-                      +{formatUZS(netProfitPerItem)}
-                    </span>
-                  </div>
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
-                    <span className="text-[9px] text-slate-400 block">Kirim miqdori</span>
-                    <span className="text-xs font-bold text-slate-200">
-                      {stock} dona
-                    </span>
-                  </div>
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-emerald-500/30">
-                    <span className="text-[9px] text-emerald-300/80 block">Kutilayotgan Sof Foyda</span>
-                    <span className="text-xs font-black text-emerald-300">
-                      +{formatUZS(totalPotentialProfit)}
-                    </span>
-                  </div>
-                </div>
+              <div className="mt-3 p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                <span>Jami partiya kirim summasi:</span>
+                <span className="font-bold text-amber-300">{formatUZS(costPrice * stock)}</span>
               </div>
             </div>
 
@@ -479,6 +420,18 @@ export const KirimPage: React.FC = () => {
                   value={material}
                   onChange={(e) => setMaterial(e.target.value)}
                   placeholder="Paxta / Koton"
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
+                />
+              </div>
+
+              {/* Pattern */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Rasmi / Printi</label>
+                <input
+                  type="text"
+                  value={pattern}
+                  onChange={(e) => setPattern(e.target.value)}
+                  placeholder="Bir xil rang"
                   className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
                 />
               </div>

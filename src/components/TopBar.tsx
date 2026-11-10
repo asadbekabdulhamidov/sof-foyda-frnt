@@ -39,7 +39,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenSidebar }) => {
       case 'kirim':
         return {
           title: 'Kirim (Kelgan Tovarlarni Kiritish)',
-          subtitle: 'Kiyim yoki birka rasmini yuklab AI orqali tizimga qabul qilish',
+          subtitle: 'Yangi tovarlar parametrlarini to\'ldirib omborga qabul qilish',
         };
       case 'savdo':
         return {
@@ -103,7 +103,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenSidebar }) => {
               className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Yangi Kirim (AI)</span>
+              <span className="hidden sm:inline">Yangi Kirim</span>
               <span className="sm:hidden">Kirim</span>
             </button>
 

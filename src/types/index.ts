@@ -1,16 +1,3 @@
-export interface AIClothingAnalysis {
-  category: string;
-  type: string;
-  color: string;
-  material_estimated: string;
-  pattern: string;
-  season: string;
-  target_audience: string;
-  sizes_detected: string[];
-  short_title: string;
-  sku_code_suggestion: string;
-}
-
 export interface Product {
   id: string;
   category: string;

@@ -12,6 +12,9 @@ export const ReceiptModal: React.FC = () => {
     window.print();
   };
 
+  const storeName = localStorage.getItem('sof_foyda_store_name') || 'SOF FOYDA';
+  const storeAddress = localStorage.getItem('sof_foyda_store_address') || 'Toshkent sh., Savdo Markazi';
+  const storePhone = localStorage.getItem('sof_foyda_store_phone') || '+998 (90) 000-00-00';
   const getMethodName = (m: string) => {
     switch (m) {
       case 'click_payme': return 'Click / Payme';
@@ -48,9 +51,9 @@ export const ReceiptModal: React.FC = () => {
           >
             {/* Store title */}
             <div className="text-center pb-2 border-b border-dashed border-slate-400">
-              <h3 className="text-sm font-black tracking-wider">"SOF FOYDA" KIYIM DO'KONI</h3>
-              <p className="text-[10px] text-slate-600 mt-0.5">Toshkent sh., Savdo Markazi</p>
-              <p className="text-[10px] text-slate-600">Tel: +998 (90) 000-00-00</p>
+              <h3 className="text-sm font-black tracking-wider uppercase">"{storeName}" KIYIM DO'KONI</h3>
+              <p className="text-[10px] text-slate-600 mt-0.5">{storeAddress}</p>
+              <p className="text-[10px] text-slate-600">Tel: {storePhone}</p>
             </div>
 
             {/* Receipt Info */}

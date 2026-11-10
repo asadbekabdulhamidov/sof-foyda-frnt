@@ -1,28 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { X, Key, Store, RefreshCw, Check, Code } from 'lucide-react';
-import { CLOTHING_SYSTEM_PROMPT } from '../services/geminiService';
+import { X, Store, RefreshCw, Check, MapPin, Phone } from 'lucide-react';
 
 export const SettingsModal: React.FC = () => {
   const { isSettingsOpen, setIsSettingsOpen, resetToDefaults } = useStore();
-  const [apiKey, setApiKey] = useState('');
   const [storeName, setStoreName] = useState('Sof Foyda');
+  const [storeAddress, setStoreAddress] = useState('Toshkent sh., Savdo Markazi');
+  const [storePhone, setStorePhone] = useState('+998 (90) 000-00-00');
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    const savedKey = localStorage.getItem('sof_foyda_gemini_api_key') || '';
-    setApiKey(savedKey);
     const savedName = localStorage.getItem('sof_foyda_store_name') || 'Sof Foyda';
+    const savedAddress = localStorage.getItem('sof_foyda_store_address') || 'Toshkent sh., Savdo Markazi';
+    const savedPhone = localStorage.getItem('sof_foyda_store_phone') || '+998 (90) 000-00-00';
     setStoreName(savedName);
+    setStoreAddress(savedAddress);
+    setStorePhone(savedPhone);
   }, [isSettingsOpen]);
 
   if (!isSettingsOpen) return null;
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('sof_foyda_gemini_api_key', apiKey.trim());
     localStorage.setItem('sof_foyda_store_name', storeName.trim());
+    localStorage.setItem('sof_foyda_store_address', storeAddress.trim());
+    localStorage.setItem('sof_foyda_store_phone', storePhone.trim());
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -32,7 +34,7 @@ export const SettingsModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-slate-950/40">
@@ -41,8 +43,8 @@ export const SettingsModal: React.FC = () => {
               <Store className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Tizim Sozlamalari</h3>
-              <p className="text-[11px] text-slate-400">Do'kon va AI Vision API konfiguratsiyasi</p>
+              <h3 className="text-sm font-bold text-white">Do'kon Sozlamalari</h3>
+              <p className="text-[11px] text-slate-400">Do'kon ma'lumotlari va kassa cheki rekvizitlari</p>
             </div>
           </div>
           <button
@@ -58,71 +60,60 @@ export const SettingsModal: React.FC = () => {
           
           {/* Store Name */}
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Do'kon Nomi</label>
+            <label className="block font-medium text-slate-300 mb-1 flex items-center gap-1.5">
+              <Store className="w-3.5 h-3.5 text-emerald-400" /> Do'kon Nomi
+            </label>
             <input
               type="text"
+              required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-white outline-none"
             />
           </div>
 
-          {/* Gemini API Key */}
+          {/* Store Address */}
           <div>
-            <label className="block font-medium text-slate-300 mb-1 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-emerald-400" />
-                Google Gemini API Kaliti
-              </span>
-              <a
-                href="https://aistudio.google.com/app/apikey"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[10px] text-emerald-400 hover:underline"
-              >
-                API kalit olish (bepul) &rarr;
-              </a>
+            <label className="block font-medium text-slate-300 mb-1 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-emerald-400" /> Manzil (Chekda chiqadi)
             </label>
             <input
-              type="password"
-              placeholder="AIzaSy..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-white font-mono outline-none"
+              type="text"
+              value={storeAddress}
+              onChange={(e) => setStoreAddress(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-white outline-none"
             />
-            <p className="text-[10px] text-slate-500 mt-1">
-              Kalit kiritilmasa, tizim avtomatik aqlli simulyatsiya rejimida ishlaydi.
-            </p>
           </div>
 
-          {/* View System Prompt Toggle */}
-          <div className="pt-2 border-t border-slate-800">
-            <button
-              type="button"
-              onClick={() => setShowPrompt(!showPrompt)}
-              className="text-[11px] text-slate-400 hover:text-emerald-400 flex items-center gap-1 transition-colors"
-            >
-              <Code className="w-3 h-3" />
-              <span>{showPrompt ? "AI Tizim Promptini yashirish" : "AI Kiyim tahlili promptini ko'rish"}</span>
-            </button>
+          {/* Store Phone */}
+          <div>
+            <label className="block font-medium text-slate-300 mb-1 flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-emerald-400" /> Telefon raqami
+            </label>
+            <input
+              type="text"
+              value={storePhone}
+              onChange={(e) => setStorePhone(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-white outline-none"
+            />
+          </div>
 
-            {showPrompt && (
-              <pre className="mt-2 text-[10px] font-mono bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 max-h-40 overflow-y-auto whitespace-pre-wrap">
-                {CLOTHING_SYSTEM_PROMPT}
-              </pre>
-            )}
+          {/* Currency Info */}
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-slate-400">
+            <span>Standart Valyuta:</span>
+            <span className="font-bold text-emerald-400">UZS (O'zbek so'mi)</span>
           </div>
 
           {/* Reset Demo Data */}
-          <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+          <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
             <div>
-              <span className="font-semibold text-slate-300 block">Namunaviy Ma'lumotlarni Qaytarish</span>
-              <span className="text-[10px] text-slate-500">Ombor va savdolarni dastlabki holatga qaytaradi</span>
+              <span className="font-semibold text-slate-300 block">Dastlabki holatga qaytarish</span>
+              <span className="text-[10px] text-slate-500">Ombor va savdolarni tiklaydi</span>
             </div>
             <button
               type="button"
               onClick={() => {
-                if (confirm("Haqiqatan ham barcha tovar va savdolarni standart holatga qaytarmoqchimisiz?")) {
+                if (confirm("Haqiqatan ham barcha tovar va savdolarni dastlabki holatga qaytarmoqchimisiz?")) {
                   resetToDefaults();
                   alert("Ma'lumotlar tiklandi!");
                 }

@@ -7,7 +7,6 @@ import {
   ShoppingCart, 
   History, 
   Settings, 
-  Sparkles, 
   Coins,
   ChevronRight,
   Store
@@ -51,8 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       label: 'Kirim',
       sublabel: 'Kelgan Tovarlarni Kiritish',
       icon: PackagePlus,
-      badge: 'AI',
-      isAi: true,
+      badge: null,
     },
     {
       id: 'savdo',
@@ -155,14 +153,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     {item.badge && (
                       <span
                         className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                          item.isAi
-                            ? 'bg-emerald-500 text-slate-950 flex items-center gap-0.5'
-                            : item.isCart
+                          item.isCart
                             ? 'bg-emerald-500 text-slate-950'
                             : 'bg-slate-800 text-slate-300 border border-slate-700'
                         }`}
                       >
-                        {item.isAi && <Sparkles className="w-2.5 h-2.5" />}
                         {item.badge}
                       </span>
                     )}

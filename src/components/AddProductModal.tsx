@@ -1,20 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
-import { analyzeClothingImage } from '../services/geminiService';
-import type { AIClothingAnalysis } from '../types';
 import { 
   X, 
   Upload, 
-  Sparkles, 
   Check, 
   DollarSign, 
-  Tag, 
   Layers, 
   Camera, 
-  Code, 
-  RefreshCw,
-  PlusCircle,
-  HelpCircle
+  RefreshCw, 
+  PlusCircle, 
+  PackagePlus 
 } from 'lucide-react';
 import { formatUZS, generateBarcodeNumber } from '../utils/formatters';
 import confetti from 'canvas-confetti';
@@ -43,22 +38,19 @@ export const AddProductModal: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [rawJson, setRawJson] = useState<string>('');
-  const [showJsonViewer, setShowJsonViewer] = useState<boolean>(false);
 
-  // Form Fields mapped to prompt
-  const [category, setCategory] = useState('');
-  const [type, setType] = useState('');
-  const [color, setColor] = useState('');
-  const [material, setMaterial] = useState('');
-  const [pattern, setPattern] = useState('');
+  // Form Fields
+  const [category, setCategory] = useState("Erkaklar shimi");
+  const [type, setType] = useState('Klassik');
+  const [color, setColor] = useState('Qora');
+  const [material, setMaterial] = useState('Paxta / Koton');
+  const [pattern] = useState('Bir xil rang');
   const [season, setSeason] = useState('Bahor/Kuz');
   const [targetAudience, setTargetAudience] = useState('Erkaklar');
   const [sizes, setSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
   const [newSizeInput, setNewSizeInput] = useState('');
   const [shortTitle, setShortTitle] = useState('');
-  const [skuCode, setSkuCode] = useState('');
+  const [skuCode, setSkuCode] = useState(`SHIM-${Math.floor(100 + Math.random() * 900)}`);
   
   // Pricing and Stock
   const [costPrice, setCostPrice] = useState<number>(100000);
@@ -73,54 +65,9 @@ export const AddProductModal: React.FC = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setImagePreview(base64);
-        runAIAnalysis(base64);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const selectSampleImage = (url: string) => {
-    setImagePreview(url);
-    runAIAnalysis(url);
-  };
-
-  const runAIAnalysis = async (imgData: string) => {
-    setIsAnalyzing(true);
-    try {
-      const result: AIClothingAnalysis = await analyzeClothingImage(imgData);
-      setRawJson(JSON.stringify(result, null, 2));
-
-      setCategory(result.category);
-      setType(result.type);
-      setColor(result.color);
-      setMaterial(result.material_estimated);
-      setPattern(result.pattern);
-      setSeason(result.season);
-      setTargetAudience(result.target_audience);
-      setSizes(result.sizes_detected && result.sizes_detected.length > 0 ? result.sizes_detected : ['S', 'M', 'L', 'XL']);
-      setShortTitle(result.short_title);
-      setSkuCode(result.sku_code_suggestion);
-
-      // Estimated intelligent pricing
-      if (result.type.toLowerCase().includes('xudi') || result.type.toLowerCase().includes('kurtka')) {
-        setCostPrice(140000);
-        setSellingPrice(260000);
-      } else if (result.type.toLowerCase().includes('shim') || result.type.toLowerCase().includes('jinsi')) {
-        setCostPrice(120000);
-        setSellingPrice(220000);
-      } else if (result.type.toLowerCase().includes('t-shirt') || result.type.toLowerCase().includes('futbolka')) {
-        setCostPrice(45000);
-        setSellingPrice(95000);
-      } else {
-        setCostPrice(110000);
-        setSellingPrice(210000);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAnalyzing(false);
     }
   };
 
@@ -167,7 +114,6 @@ export const AddProductModal: React.FC = () => {
     });
 
     setIsAddModalOpen(false);
-    // Optionally open barcode for printing
     setBarcodeProduct(saved);
   };
 
@@ -177,23 +123,20 @@ export const AddProductModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/40">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-500/20">
-              <Sparkles className="w-5 h-5" />
+              <PackagePlus className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                Kiyim Rasmidan Aqlli Tovar Kiritish
-                <span className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  AI Auto-Fill
-                </span>
+              <h2 className="text-base font-bold text-white">
+                Yangi Tovar Qo'shish
               </h2>
               <p className="text-xs text-slate-400">
-                Rasmni yuklang, Gemini AI barcha parametrlar va o'lchamlarni avtomatik to'ldiradi
+                Tovar ma'lumotlarini kiriting va omborga saqlang
               </p>
             </div>
           </div>
@@ -208,17 +151,17 @@ export const AddProductModal: React.FC = () => {
         {/* Modal Body */}
         <div className="overflow-y-auto p-6 space-y-6">
           
-          {/* Section 1: Image Upload & AI Scanner Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Image & Financial Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
             
-            {/* Left: Upload Box */}
-            <div className="lg:col-span-5 flex flex-col gap-3">
+            {/* Image Box */}
+            <div className="md:col-span-5 flex flex-col gap-2">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all min-h-[220px] ${
+                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-3 flex flex-col items-center justify-center text-center transition-all min-h-[160px] ${
                   imagePreview
                     ? 'border-emerald-500/50 bg-slate-950/60'
-                    : 'border-slate-700 hover:border-emerald-500/50 bg-slate-950/30 hover:bg-slate-950/50'
+                    : 'border-slate-700 hover:border-emerald-500/50 bg-slate-950/30'
                 }`}
               >
                 <input
@@ -230,165 +173,88 @@ export const AddProductModal: React.FC = () => {
                 />
 
                 {imagePreview ? (
-                  <div className="relative w-full h-48 rounded-xl overflow-hidden">
+                  <div className="relative w-full h-36 rounded-xl overflow-hidden">
                     <img
                       src={imagePreview}
                       alt="Kiyim rasmi"
                       className="w-full h-full object-cover rounded-xl"
                     />
-                    {isAnalyzing && (
-                      <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center gap-3">
-                        <div className="w-10 h-10 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-xs font-semibold text-emerald-300 animate-pulse">
-                          AI kiyim va birkani tahlil qilmoqda...
-                        </span>
-                      </div>
-                    )}
                     <div className="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur-md text-[10px] text-slate-200 px-2 py-1 rounded-lg border border-slate-700 flex items-center gap-1 group-hover:bg-emerald-600 transition-colors">
-                      <Camera className="w-3 h-3" /> Rasmni o'zgartirish
+                      <Camera className="w-3 h-3" /> O'zgartirish
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-3 py-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Upload className="w-6 h-6" />
+                  <div className="flex flex-col items-center gap-2 py-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+                      <Upload className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-slate-200">
-                        Kiyim yoki birka rasmini bu yerga tashlang
-                      </p>
-                      <p className="text-[11px] text-slate-400 mt-1">
-                        PNG, JPG, WEBP formatlari qo'llab-quvvatlanadi
-                      </p>
-                    </div>
-                    <span className="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">
-                      Faylni tanlash
+                    <p className="text-xs font-semibold text-slate-200">
+                      Rasm yuklash (ixtiyoriy)
+                    </p>
+                    <span className="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">
+                      Tanlash
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Sample images quick test */}
-              <div>
-                <p className="text-[11px] font-medium text-slate-400 mb-1.5 flex items-center gap-1">
-                  <HelpCircle className="w-3 h-3" /> Tezkor test uchun namunaviy kiyimlar:
-                </p>
-                <div className="grid grid-cols-4 gap-2">
-                  {SAMPLE_IMAGES.map((sample) => (
-                    <button
-                      key={sample.name}
-                      type="button"
-                      onClick={() => selectSampleImage(sample.url)}
-                      className="group relative rounded-lg overflow-hidden border border-slate-800 hover:border-emerald-500/50 transition-all text-left"
-                    >
-                      <img
-                        src={sample.url}
-                        alt={sample.name}
-                        className="w-full h-12 object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <span className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[9px] text-slate-200 font-medium px-1 py-0.5 truncate text-center">
-                        {sample.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+              {/* Sample picks */}
+              <div className="grid grid-cols-4 gap-1.5">
+                {SAMPLE_IMAGES.map((sample) => (
+                  <button
+                    key={sample.name}
+                    type="button"
+                    onClick={() => setImagePreview(sample.url)}
+                    className="rounded-lg overflow-hidden border border-slate-800 hover:border-emerald-500/50 transition-all text-left"
+                  >
+                    <img
+                      src={sample.url}
+                      alt={sample.name}
+                      className="w-full h-8 object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Right: AI Quick Summary & Sof Foyda Projection */}
-            <div className="lg:col-span-7 flex flex-col justify-between bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" /> AI Tahlil Xulosasi (JSON Parametrlar)
-                  </span>
-                  {rawJson && (
-                    <button
-                      type="button"
-                      onClick={() => setShowJsonViewer(!showJsonViewer)}
-                      className="text-[10px] text-slate-400 hover:text-emerald-400 flex items-center gap-1 underline transition-colors"
-                    >
-                      <Code className="w-3 h-3" /> {showJsonViewer ? 'Formani ko\'rish' : 'Xom JSONni ko\'rish'}
-                    </button>
-                  )}
-                </div>
-
-                {showJsonViewer ? (
-                  <pre className="text-[11px] font-mono bg-slate-950 text-emerald-300 p-3 rounded-xl border border-slate-800 max-h-48 overflow-auto">
-                    {rawJson}
-                  </pre>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
-                    <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-500 block">Kategoriya</span>
-                      <span className="font-semibold text-slate-200 truncate block">{category || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-500 block">Turi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{type || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-500 block">Rangi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{color || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-500 block">Matosi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{material || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-500 block">Rasmi/Printi</span>
-                      <span className="font-semibold text-slate-200 truncate block">{pattern || '—'}</span>
-                    </div>
-                    <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-500 block">Kim uchun</span>
-                      <span className="font-semibold text-emerald-400 truncate block">{targetAudience || '—'}</span>
-                    </div>
-                  </div>
-                )}
+            {/* Sof Foyda Calculation Box */}
+            <div className="md:col-span-7 flex flex-col justify-center bg-gradient-to-br from-emerald-950/40 via-slate-950 to-slate-950 p-4 rounded-2xl border border-emerald-500/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <DollarSign className="w-4 h-4 text-emerald-400" /> Sof Foyda Hisobi
+                </span>
+                <span className="text-xs font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                  Marja: {profitMarginPercent}%
+                </span>
               </div>
-
-              {/* Sof Foyda & Financial Projection Box */}
-              <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                    <DollarSign className="w-4 h-4 text-emerald-400" /> Sof Foyda Hisobi
-                  </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                    Marja: {profitMarginPercent}%
+              
+              <div className="grid grid-cols-3 gap-2.5 text-center mt-2">
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block">1 donadan foyda</span>
+                  <span className="text-xs font-black text-emerald-400">
+                    +{formatUZS(netProfitPerItem)}
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
-                    <span className="text-[10px] text-slate-400 block">1 dona sotuvdan foyda</span>
-                    <span className="text-sm font-bold text-emerald-400">
-                      +{formatUZS(netProfitPerItem)}
-                    </span>
-                  </div>
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
-                    <span className="text-[10px] text-slate-400 block">Jami partiya miqdori</span>
-                    <span className="text-sm font-bold text-slate-200">
-                      {stock} dona
-                    </span>
-                  </div>
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-emerald-500/30">
-                    <span className="text-[10px] text-emerald-300/80 block">Kutilayotgan Sof Foyda</span>
-                    <span className="text-sm font-extrabold text-emerald-300">
-                      +{formatUZS(totalPotentialProfit)}
-                    </span>
-                  </div>
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block">Kirim miqdori</span>
+                  <span className="text-xs font-bold text-slate-200">
+                    {stock} dona
+                  </span>
+                </div>
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-emerald-500/30">
+                  <span className="text-[10px] text-emerald-300/80 block">Partiya Foydasi</span>
+                  <span className="text-xs font-black text-emerald-300">
+                    +{formatUZS(totalPotentialProfit)}
+                  </span>
                 </div>
               </div>
             </div>
 
           </div>
 
-          {/* Section 2: Product Editable Form */}
-          <form id="add-product-form" onSubmit={handleSaveProduct} className="space-y-4 pt-4 border-t border-slate-800">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-emerald-400" /> Tovar Ma'lumotlarini Tasdiqlash & Tahrirlash
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Form */}
+          <form id="add-product-modal-form" onSubmit={handleSaveProduct} className="space-y-4 pt-4 border-t border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
               
               {/* Short Title */}
               <div className="lg:col-span-2">
@@ -439,7 +305,7 @@ export const AddProductModal: React.FC = () => {
                   type="text"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  placeholder="Klassik kostyum shimi"
+                  placeholder="Klassik shim"
                   className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
                 />
               </div>
@@ -458,24 +324,12 @@ export const AddProductModal: React.FC = () => {
 
               {/* Material */}
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Taxminiy Matosi</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Matosi</label>
                 <input
                   type="text"
                   value={material}
                   onChange={(e) => setMaterial(e.target.value)}
                   placeholder="Paxta / Koton"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
-                />
-              </div>
-
-              {/* Pattern */}
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Rasmi / Printi</label>
-                <input
-                  type="text"
-                  value={pattern}
-                  onChange={(e) => setPattern(e.target.value)}
-                  placeholder="Bir xil rang"
                   className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
                 />
               </div>
@@ -509,26 +363,6 @@ export const AddProductModal: React.FC = () => {
                   <option value="Qiz bola">Qiz bola</option>
                   <option value="Uniseks">Uniseks</option>
                 </select>
-              </div>
-
-              {/* Barcode */}
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
-                  <span>Shtrix-kod</span>
-                  <button
-                    type="button"
-                    onClick={() => setBarcode(generateBarcodeNumber())}
-                    className="text-[10px] text-emerald-400 hover:underline flex items-center gap-0.5"
-                  >
-                    <RefreshCw className="w-2.5 h-2.5" /> Yangilash
-                  </button>
-                </label>
-                <input
-                  type="text"
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs font-mono text-white outline-none"
-                />
               </div>
 
               {/* Stock */}
@@ -578,9 +412,29 @@ export const AddProductModal: React.FC = () => {
                 />
               </div>
 
+              {/* Barcode */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+                  <span>Shtrix-kod</span>
+                  <button
+                    type="button"
+                    onClick={() => setBarcode(generateBarcodeNumber())}
+                    className="text-[10px] text-emerald-400 hover:underline flex items-center gap-0.5"
+                  >
+                    <RefreshCw className="w-2.5 h-2.5" /> Yangilash
+                  </button>
+                </label>
+                <input
+                  type="text"
+                  value={barcode}
+                  onChange={(e) => setBarcode(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs font-mono text-white outline-none"
+                />
+              </div>
+
             </div>
 
-            {/* Sizes Array Manager */}
+            {/* Sizes */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-emerald-400" />
@@ -603,7 +457,6 @@ export const AddProductModal: React.FC = () => {
                   </span>
                 ))}
                 
-                {/* Add new size input */}
                 <div className="flex items-center gap-1 ml-2">
                   <input
                     type="text"
@@ -615,7 +468,7 @@ export const AddProductModal: React.FC = () => {
                         handleAddSize();
                       }
                     }}
-                    placeholder="+ O'lcham (masalan: 38)"
+                    placeholder="+ Razmer (38)"
                     className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
                   />
                   <button
@@ -643,16 +496,14 @@ export const AddProductModal: React.FC = () => {
             Bekor qilish
           </button>
 
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              form="add-product-form"
-              className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
-            >
-              <Check className="w-4 h-4" />
-              <span>Omborga Saqlash</span>
-            </button>
-          </div>
+          <button
+            type="submit"
+            form="add-product-modal-form"
+            className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+          >
+            <Check className="w-4 h-4" />
+            <span>Omborga Saqlash</span>
+          </button>
         </div>
 
       </div>

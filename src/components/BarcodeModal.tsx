@@ -5,6 +5,7 @@ import { formatUZS } from '../utils/formatters';
 
 export const BarcodeModal: React.FC = () => {
   const { barcodeProduct, setBarcodeProduct } = useStore();
+  const storeName = localStorage.getItem('sof_foyda_store_name') || 'SOF FOYDA';
 
   if (!barcodeProduct) return null;
 
@@ -38,7 +39,7 @@ export const BarcodeModal: React.FC = () => {
           >
             {/* Store title */}
             <div className="text-[11px] font-black tracking-widest uppercase border-b-2 border-slate-950 pb-1 w-full flex items-center justify-between">
-              <span>SOF FOYDA</span>
+              <span className="uppercase">{storeName}</span>
               <span className="text-[9px] font-normal text-slate-600">KIYIM DO'KONI</span>
             </div>
 
