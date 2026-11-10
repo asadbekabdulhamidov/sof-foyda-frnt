@@ -239,14 +239,26 @@ export const ProductList: React.FC = () => {
                       {product.short_title}
                     </h4>
 
-                    {/* Sizes list */}
-                    <div className="flex flex-wrap items-center gap-1 mt-2">
-                      {product.sizes.map((sz) => (
+                    {/* Sizes list with exact quantities */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      {(product.size_variants && product.size_variants.length > 0
+                        ? product.size_variants
+                        : product.sizes.map((s) => ({ size: s, quantity: Math.max(1, Math.floor(product.stock / (product.sizes.length || 1))) }))
+                      ).map((v) => (
                         <span
-                          key={sz}
-                          className="text-[10px] font-semibold bg-slate-950 border border-slate-800 text-slate-300 px-1.5 py-0.5 rounded-md"
+                          key={v.size}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
+                            v.quantity <= 0
+                              ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 line-through'
+                              : v.quantity <= 2
+                              ? 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                              : 'bg-slate-950 text-slate-200 border-slate-800'
+                          }`}
                         >
-                          {sz}
+                          <span>{v.size}:</span>
+                          <span className={v.quantity <= 0 ? 'text-rose-400 font-extrabold' : 'text-emerald-400'}>
+                            {v.quantity > 0 ? `${v.quantity} ta` : '0 ta'}
+                          </span>
                         </span>
                       ))}
                     </div>
@@ -383,9 +395,19 @@ export const ProductList: React.FC = () => {
                       <td className="py-3 px-3">{p.category}</td>
                       <td className="py-3 px-3">
                         <div className="flex flex-wrap gap-1">
-                          {p.sizes.map((s) => (
-                            <span key={s} className="bg-slate-950 border border-slate-800 text-[10px] px-1 rounded">
-                              {s}
+                          {(p.size_variants && p.size_variants.length > 0
+                            ? p.size_variants
+                            : p.sizes.map((s) => ({ size: s, quantity: Math.max(1, Math.floor(p.stock / (p.sizes.length || 1))) }))
+                          ).map((v) => (
+                            <span 
+                              key={v.size} 
+                              className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                                v.quantity <= 0 
+                                  ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 line-through' 
+                                  : 'bg-slate-950 text-slate-300 border-slate-800'
+                              }`}
+                            >
+                              {v.size}: <strong className={v.quantity <= 0 ? 'text-rose-400' : 'text-emerald-400'}>{v.quantity}</strong>
                             </span>
                           ))}
                         </div>

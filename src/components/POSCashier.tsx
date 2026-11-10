@@ -170,20 +170,33 @@ export const POSCashier: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Sizes selection buttons */}
+                    {/* Sizes selection buttons with per-size stock */}
                     <div className="flex flex-wrap gap-1">
-                      {p.sizes.map((sz) => (
-                        <button
-                          key={sz}
-                          type="button"
-                          onClick={() => addToCart(p, sz)}
-                          disabled={p.stock <= 0}
-                          className="flex-1 min-w-[28px] py-1 text-[10px] font-bold rounded bg-slate-950 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-slate-800 transition-colors disabled:opacity-40"
-                          title={`${sz} o'lchamini savatga qo'shish`}
-                        >
-                          {sz}
-                        </button>
-                      ))}
+                      {(p.size_variants && p.size_variants.length > 0
+                        ? p.size_variants
+                        : p.sizes.map((sz) => ({ size: sz, quantity: p.stock }))
+                      ).map((v) => {
+                        const isOutOfStock = v.quantity <= 0;
+                        return (
+                          <button
+                            key={v.size}
+                            type="button"
+                            onClick={() => addToCart(p, v.size)}
+                            disabled={isOutOfStock}
+                            className={`flex-1 min-w-[32px] py-1 px-1 rounded text-center transition-colors border leading-tight ${
+                              isOutOfStock
+                                ? 'bg-slate-950 text-slate-600 border-slate-800 opacity-40 cursor-not-allowed'
+                                : 'bg-slate-950 hover:bg-emerald-500 hover:text-slate-950 text-slate-200 border-slate-800'
+                            }`}
+                            title={`${v.size} razmer (${v.quantity} dona qoldi)`}
+                          >
+                            <span className="text-[10px] font-black block">{v.size}</span>
+                            <span className={`text-[8px] font-bold block ${isOutOfStock ? 'text-rose-500' : v.quantity <= 2 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                              {isOutOfStock ? '0 ta' : `${v.quantity} ta`}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

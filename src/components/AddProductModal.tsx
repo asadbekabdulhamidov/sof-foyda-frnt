@@ -98,6 +98,10 @@ export const AddProductModal: React.FC = () => {
       season: season || "Barcha mavsum",
       target_audience: targetAudience || "Uniseks",
       sizes: sizes.length > 0 ? sizes : ['S', 'M', 'L', 'XL'],
+      size_variants: (sizes.length > 0 ? sizes : ['S', 'M', 'L', 'XL']).map((sz) => ({
+        size: sz,
+        quantity: Math.max(1, Math.floor(stock / (sizes.length || 1))),
+      })),
       short_title: shortTitle,
       sku_code: skuCode,
       cost_price: Number(costPrice) || 0,

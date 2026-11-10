@@ -53,7 +53,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('sof_foyda_products');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Product[];
+        return parsed.map((p) => {
+          if (!p.size_variants || p.size_variants.length === 0) {
+            const sizesList = p.sizes && p.sizes.length > 0 ? p.sizes : ['S', 'M', 'L', 'XL'];
+            const perSize = Math.max(1, Math.floor(p.stock / sizesList.length));
+            return {
+              ...p,
+              size_variants: sizesList.map((s) => ({ size: s, quantity: perSize })),
+            };
+          }
+          return p;
+        });
+      }
     } catch (e) {
       console.error(e);
     }
@@ -203,16 +216,33 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       created_at: new Date().toISOString(),
     };
 
-    // Decrease product stock
+    // Decrease product stock and specific size variants
     setProducts((prev) =>
       prev.map((prod) => {
-        const cartQty = cart
-          .filter((item) => item.product.id === prod.id)
-          .reduce((sum, item) => sum + item.quantity, 0);
-        if (cartQty > 0) {
-          return { ...prod, stock: Math.max(0, prod.stock - cartQty) };
-        }
-        return prod;
+        const cartItemsForProd = cart.filter((item) => item.product.id === prod.id);
+        if (cartItemsForProd.length === 0) return prod;
+
+        let totalDeducted = 0;
+        const currentVariants = prod.size_variants || [];
+        const updatedVariants = currentVariants.map((sv) => {
+          const match = cartItemsForProd.find((ci) => ci.selected_size === sv.size);
+          if (match) {
+            totalDeducted += match.quantity;
+            return { ...sv, quantity: Math.max(0, sv.quantity - match.quantity) };
+          }
+          return sv;
+        });
+
+        // Calculate remaining total stock from variants
+        const remainingStock = updatedVariants.length > 0
+          ? updatedVariants.reduce((sum, v) => sum + v.quantity, 0)
+          : Math.max(0, prod.stock - totalDeducted);
+
+        return {
+          ...prod,
+          size_variants: updatedVariants,
+          stock: remainingStock,
+        };
       })
     );
 

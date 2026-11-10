@@ -1,3 +1,8 @@
+export interface SizeVariant {
+  size: string;
+  quantity: number;
+}
+
 export interface Product {
   id: string;
   category: string;
@@ -7,12 +12,13 @@ export interface Product {
   pattern: string;
   season: string;
   target_audience: string;
-  sizes: string[];
+  sizes: string[]; // O'lchamlar ro'yxati (masalan: ['S', 'M', 'L', 'XL'])
+  size_variants: SizeVariant[]; // Har bir razmerda nechtadan borligi
   short_title: string;
   sku_code: string;
   cost_price: number; // Kirim narxi / Tannarx (UZS)
   selling_price: number; // Sotuv narxi (UZS)
-  stock: number; // Qoldiq soni
+  stock: number; // Jami qoldiq soni (barcha razmerlar yig'indisi)
   image_url: string;
   created_at: string;
   barcode: string;
