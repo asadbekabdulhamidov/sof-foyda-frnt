@@ -52,4 +52,4 @@ export interface Sale {
   created_at: string;
 }
 
-export type ActiveTab = 'scanner' | 'products' | 'pos' | 'analytics' | 'sales_history';
+export type ActiveTab = 'dashboard' | 'ombor' | 'kirim' | 'savdo' | 'sales_history';

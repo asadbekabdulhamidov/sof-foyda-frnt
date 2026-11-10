@@ -94,7 +94,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('products');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
   const [lastSaleReceipt, setLastSaleReceipt] = useState<Sale | null>(null);

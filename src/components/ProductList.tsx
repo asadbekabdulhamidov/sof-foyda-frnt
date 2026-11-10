@@ -23,7 +23,6 @@ export const ProductList: React.FC = () => {
     deleteProduct, 
     addToCart, 
     setBarcodeProduct, 
-    setIsAddModalOpen,
     setActiveTab,
     metrics 
   } = useStore();
@@ -160,11 +159,11 @@ export const ProductList: React.FC = () => {
 
           {/* Add product button */}
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => setActiveTab('kirim')}
             className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>AI Tovar Kiritish</span>
+            <span>Yangi Kirim Qilish (AI)</span>
           </button>
         </div>
 
@@ -183,10 +182,10 @@ export const ProductList: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => setActiveTab('kirim')}
             className="mt-2 flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20"
           >
-            <Sparkles className="w-4 h-4" /> AI bilan kiyim qo'shish
+            <Sparkles className="w-4 h-4" /> Yangi tovar kiritish (Kirim)
           </button>
         </div>
       )}
@@ -311,7 +310,7 @@ export const ProductList: React.FC = () => {
                           type="button"
                           onClick={() => {
                             addToCart(product);
-                            setActiveTab('pos');
+                            setActiveTab('savdo');
                           }}
                           className="flex items-center gap-1 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 font-bold px-2 py-1.5 rounded-lg text-xs transition-all border border-emerald-500/30"
                           title="Kassaga qo'shish"
@@ -418,7 +417,7 @@ export const ProductList: React.FC = () => {
                           <button
                             onClick={() => {
                               addToCart(p);
-                              setActiveTab('pos');
+                              setActiveTab('savdo');
                             }}
                             className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 transition-colors font-bold"
                             title="Kassaga qo'shish"
